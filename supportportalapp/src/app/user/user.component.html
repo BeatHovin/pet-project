@@ -1,0 +1,638 @@
+<div class="container">
+  <div class="row mb-2 mt-2 text-center">
+  </div>
+
+  <!-- nav bar -->
+  <nav class="navbar navbar-expand-md breadcrumb">
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <div class="nav nav-pills">
+        <a *ngIf="!isManager" [hidden]="isManager" class="nav- nav-link active ml-3" data-toggle="tab"
+           href="#productTypes">
+          Продукция
+        </a>
+        <a [hidden]="!isUser" class="nav-item nav-link ml-3" data-toggle="tab" href="#cart">
+          Корзина
+        </a>
+        <a [hidden]="!isUser" class="nav-item nav-link ml-3" data-toggle="tab" href="#orders">
+          Заказы
+        </a>
+        <a *ngIf="isManager" [hidden]="!isManager" class="nav-item nav-link active ml-3" data-toggle="tab"
+           href="#inAcceptingOrders">
+          Неподтвержденные заказы
+        </a>
+        <a [hidden]="!isManager" class="nav-item nav-link ml-3" data-toggle="tab" href="#inProcessingOrders">
+          Заказы в сборке
+        </a>
+        <a class="nav-item nav-link move-right mr-3" data-toggle="tab" href="#profile">
+          {{user?.firstName}}
+          <i class="bi bi-person-fill"></i>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="tab-content mt-3" id="myTabContent">
+
+    <!--IN_ACCEPTING_ORDERS-TAB-->
+    <div *ngIf="isManager" class="tab-pane fade show active" id="inAcceptingOrders"
+         aria-labelledby="inAcceptingOrders-tab" role="tabpanel" [hidden]="!isManager">
+      <h2 *ngIf="!(inAcceptingOrders.length === 0)" class="text-center text-primary">Неподтвержденные заказы</h2>
+      <h2 *ngIf="inAcceptingOrders.length === 0" class="text-center text-primary">Неподтвержденные заказы отсутствуют</h2>
+      <table *ngIf="!(inAcceptingOrders.length === 0)"  class="table table-hover">
+        <thead class="table-borderless">
+        <tr class="text-center">
+          <th>Номер заказа</th>
+          <th>Статус заказа</th>
+          <th>Вид продукции</th>
+          <th>Стандарт</th>
+          <th>Марка стали</th>
+          <th>Профилеразмер, мм</th>
+          <th>Толщина стенки, мм</th>
+          <th>Длина, см</th>
+          <th>Количество, шт</th>
+          <th></th>
+        </tr>
+        </thead>
+
+        <tbody *ngFor="let order of inAcceptingOrders; let index = index;">
+
+        <tr *ngFor="let product of order.orderDetails" class="text-center">
+          <th *ngIf="order.orderDetails.lastIndexOf(product) === 0" [attr.rowspan]="order.orderDetails.length"
+              style="vertical-align:middle;">{{order.id}}</th>
+          <td>{{order.orderStatus}}</td>
+          <td>{{product.product.productType.productType}}</td>
+          <td>{{product.product.standard.standard}}</td>
+          <td>{{product.product.steelGrade.steelGrade}}</td>
+          <td>{{product.product.profileSize.size}}</td>
+          <td>{{product.product.sideThickness.sideThickness}}</td>
+          <td>{{product.product.productLength.productLength}}</td>
+          <td>{{product.quantity}}</td>
+          <td *ngIf="order.orderDetails.lastIndexOf(product) === 0">
+            <div class="btn-group mr-1">
+              <button class="btn btn-primary" (click)="onViewUser(order.user)"><i class="bi bi-file-earmark-person"></i>
+              </button>
+              <button class="btn btn btn-success" (click)="onAcceptOrder(order)"><i class="bi bi-bag-check"></i>
+              </button>
+              <button class="btn btn btn-danger" (click)="onDenyOrder(order)"><i class="bi bi-bag-x"></i></button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!--IN_PROCESSING_ORDERS-TAB-->
+    <div class="tab-pane fade" id="inProcessingOrders" [hidden]="!isManager">
+      <h2 *ngIf="!(inProcessingOrders.length === 0)" class="text-center text-primary">Заказы в сборке</h2>
+      <h2 *ngIf="inProcessingOrders.length === 0" class="text-center text-primary">Заказы в сборке отсутствуют</h2>
+      <table *ngIf="!(inProcessingOrders.length === 0)" class="table table-hover">
+        <thead class="table-borderless">
+        <tr class="text-center">
+          <th>Номер заказа</th>
+          <th>Статус заказа</th>
+          <th>Вид продукции</th>
+          <th>Стандарт</th>
+          <th>Марка стали</th>
+          <th>Профилеразмер, мм</th>
+          <th>Толщина стенки, мм</th>
+          <th>Длина, см</th>
+          <th>Количество, шт</th>
+          <th>action</th>
+        </tr>
+        </thead>
+
+        <tbody *ngFor="let order of inProcessingOrders; let index = index;">
+
+        <tr *ngFor="let product of order.orderDetails" class="text-center">
+          <th *ngIf="order.orderDetails.lastIndexOf(product) === 0" [attr.rowspan]="order.orderDetails.length"
+              style="vertical-align:middle;">{{order.id}}</th>
+          <td>{{order.orderStatus}}</td>
+          <td>{{product.product.productType.productType}}</td>
+          <td>{{product.product.standard.standard}}</td>
+          <td>{{product.product.steelGrade.steelGrade}}</td>
+          <td>{{product.product.profileSize.size}}</td>
+          <td>{{product.product.sideThickness.sideThickness}}</td>
+          <td>{{product.product.productLength.productLength}}</td>
+          <td>{{product.quantity}}</td>
+          <td *ngIf="order.orderDetails.lastIndexOf(product) === 0">
+            <div class="btn-group mr-1">
+              <button class="btn btn-primary" (click)="onViewUser(order.user)"><i class="bi bi-file-earmark-person"></i>
+              </button>
+              <button class="btn btn btn-success" (click)="onProcessOrder(order)"><i class="bi bi-bag-check"></i>
+              </button>
+              <button class="btn btn btn-danger" (click)="onDenyOrder(order)"><i class="bi bi-bag-x"></i></button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!--PRODUCT_TYPE-TAB-->
+    <div *ngIf="!isManager" class="tab-pane fade show active" id="productTypes" aria-labelledby="productTypes-tab"
+         role="tabpanel"
+         [hidden]="isManager">
+      <h2 class="text-center text-primary">Продукция</h2>
+
+      <table class="table table-hover">
+        <thead class="table-borderless">
+        <tr class="text-center" style="vertical-align:middle;">
+          <th>Вид продукции</th>
+          <th>Стандарт</th>
+          <th>Марка стали</th>
+          <th>Профилеразмер, мм</th>
+          <th>Толщина стенки, мм</th>
+          <th>Длина, см</th>
+          <th></th>
+
+        </tr>
+        </thead>
+
+        <tbody *ngFor="let productType of productTypes">
+
+        <tr class="text-center" style="vertical-align:middle;">
+
+          <td>{{productType.productType}}</td>
+          <td><label *ngFor="let standard of productType?.standards">{{standard.standard}}</label></td>
+          <td><label *ngFor="let steelGrade of productType?.steelGrades">|{{steelGrade.steelGrade}}| &nbsp; </label>
+          </td>
+          <td><label *ngFor="let profileSize of productType?.profileSizes">|{{profileSize.size}}| &nbsp; </label></td>
+          <td><label *ngFor="let sideThickness of productType?.sideThicknesses">|{{sideThickness.sideThickness}}|
+            &nbsp; </label></td>
+          <td><label *ngFor="let length of productType?.lengths">|{{length.productLength}}| &nbsp; </label></td>
+          <td class="">
+            <div class="btn-group">
+              <button [hidden]="!isUser" class="btn btn btn-primary" (click)="showProductsByProductType(productType)"><i
+                class="bi bi-arrow-right"></i>
+              </button>
+
+              <button [hidden]="!isAdmin" class="btn btn-outline-info" (click)="editProduct(productType)"><i
+                class="fas fa-edit"></i></button>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!--CART-TAB-->
+    <div class="tab-pane fade" id="cart" aria-labelledby="cart-tab-tab" role="tabpanel" [hidden]="!isUser">
+      <h2 [hidden]="cart.length == 0" class="text-center text-primary">Корзина</h2>
+      <h2 [hidden]="cart.length != 0" class="text-center text-primary">Ваша корзина пуста</h2>
+      <table [hidden]="cart.length == 0" class="table table-hover">
+        <thead class="table-borderless">
+        <tr class="text-center" style="vertical-align:middle;">
+          <th>Вид продукции</th>
+          <th>Стандарт</th>
+          <th>Марка стали</th>
+          <th>Профилеразмер, мм</th>
+          <th>Толщина стенки, мм</th>
+          <th>Длина, см</th>
+          <th>Количество, шт</th>
+          <th>Цена за еденицу, руб</th>
+        </tr>
+        </thead>
+        <tbody *ngFor="let product of cart; let index = index;">
+        <tr class="text-center">
+          <td>{{product.productType.productType}}</td>
+          <td>{{product.standard.standard}}</td>
+          <td>{{product.steelGrade.steelGrade}}</td>
+          <td>{{product.profileSize.size}}</td>
+          <td>{{product.sideThickness.sideThickness}}</td>
+          <td>{{product.productLength.productLength}}</td>
+          <td>{{product.quantity}}</td>
+          <td>{{product.price}}</td>
+        </tr>
+        </tbody>
+      </table>
+      <div [hidden]="cart.length == 0">
+        <button class="btn btn-success" (click)="onConfirmOrder()" type="submit">Подтвердить заказ</button>
+        <button class="btn btn-primary ml-1" (click)="onClearCart()" type="submit">Очистить корзину</button>
+      </div>
+    </div>
+
+    <!--ORDERS-TAB-->
+    <div class="tab-pane fade" id="orders" aria-labelledby="orders-tab" role="tabpanel" [hidden]="!isUser">
+      <h2 [hidden]="orders.length == 0" class="text-center text-primary">Ваши заказы</h2>
+      <h2 [hidden]="orders.length != 0" class="text-center text-primary">У вас пока нет заказов</h2>
+      <table [hidden]="orders.length == 0" class="table">
+        <thead class="table-borderless">
+        <tr class="text-center" style="vertical-align:middle;">
+          <th>Номер заказа</th>
+          <th>Статус заказа</th>
+          <th>Вид продукции</th>
+          <th>Стандарт</th>
+          <th>Марка стали</th>
+          <th>Профилеразмер, мм</th>
+          <th>Толщина стенки, мм</th>
+          <th>Длина, см</th>
+          <th>Количество, шт</th>
+          <th>Цена, руб</th>
+        </tr>
+        </thead>
+
+        <tbody *ngFor="let order of orders; let index = index;">
+
+        <tr *ngFor="let product of order.orderDetails" class="text-center">
+          <th *ngIf="order.orderDetails.lastIndexOf(product) === 0" [attr.rowspan]="order.orderDetails.length + 1"
+              style="vertical-align:middle;">{{order.id}}</th>
+          <td>{{order.orderStatus}}</td>
+          <td>{{product.product.productType.productType}}</td>
+          <td>{{product.product.standard.standard}}</td>
+          <td>{{product.product.steelGrade.steelGrade}}</td>
+          <td>{{product.product.profileSize.size}}</td>
+          <td>{{product.product.sideThickness.sideThickness}}</td>
+          <td>{{product.product.productLength.productLength}}</td>
+          <td>{{product.quantity}}</td>
+          <td>{{product.quantity}} X {{product.product.price}} </td>
+        </tr>
+        <tr>
+          <td colspan="8" style="text-align:right">ИТОГО:</td>
+          <td>{{getOrderPrice(order)}}</td>
+        </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!--PRODUCTS_BY_PRODUCT_TYPE-TAB-->
+    <div class="tab-pane fade" id="productsByProductType">
+      <h2 class="text-center text-primary">{{selectedProductType?.productType}}</h2>
+      <table class="table table-hover">
+        <thead class="table-borderless">
+        <tr class="text-center" style="vertical-align:middle;">
+          <th>Вид продукции</th>
+          <th>Стандарт</th>
+          <th>Марка стали</th>
+          <th>Профилеразмер, мм</th>
+          <th>Толщина стенки, мм</th>
+          <th>Длина, м</th>
+          <th>Наличие, шт</th>
+          <th>Цена за еденицу, руб</th>
+          <th></th>
+        </tr>
+        </thead>
+
+        <tbody *ngFor="let product of productsByProductType; let index = index;">
+        <tr class="text-center">
+          <td>{{selectedProductType.productType}}</td>
+          <td>{{product.standard.standard}}</td>
+          <td>{{product.steelGrade.steelGrade}}</td>
+          <td>{{product.profileSize.size}}</td>
+          <td>{{product.sideThickness.sideThickness}}</td>
+          <td>{{product.productLength.productLength}}</td>
+          <td>{{product.quantity}}</td>
+          <td>{{product.price}}</td>
+          <td>
+            <button class="btn btn-success" (click)="onAddToCart(product)"><i class="bi bi-cart-plus"></i></button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!--EDIT_USER-TAB-->
+    <div class="tab-pane fade" id="profile">
+      <div class="container">
+        <div class="row flex-lg-nowrap">
+          <div class="col">
+            <div class="row">
+              <div class="col mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="e-profile">
+                      <div class="row">
+                        <div class="col d-flex flex-column flex-sm-row justify-content-between mb-3">
+                          <div class="text-center text-sm-left mb-2 mb-sm-0">
+                            <h4 class="pt-sm-2 pb-1 mb-0 text-nowrap">{{user?.firstName}} {{user?.lastName}}</h4>
+                            <p class="mb-0">{{user?.username}}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="tab-content pt-3">
+                        <div class="tab-pane active">
+                          <form #profileUserForm="ngForm" (ngSubmit)="onUpdateCurrentUser(profileUserForm.value)"
+                                class="form"
+                                novalidate>
+                            <div class="row">
+                              <div class="col">
+                                <div class="row">
+
+                                  <div class="col">
+                                    <div class="form-group">
+                                      <label>Имя</label>
+                                      <input type="text" name="firstName" required [(ngModel)]="user.firstName"
+                                             class="form-control">
+                                    </div>
+                                  </div>
+
+                                  <div class="col">
+                                    <div class="form-group">
+                                      <label>Фамилия</label>
+                                      <input type="text" name="lastName" required [(ngModel)]="user.lastName"
+                                             class="form-control">
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="form-group">
+                                      <label>Почта</label>
+                                      <input type="text" name="email" required [(ngModel)]="user.email"
+                                             class="form-control">
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div class="row">
+                                  <div class="col">
+                                    <div class="form-group">
+                                      <label>Телефон</label>
+                                      <input type="text" name="phoneNumber" required [(ngModel)]="user.phoneNumber"
+                                             class="form-control">
+                                    </div>
+                                  </div>
+                                </div>
+
+                              </div>
+                            </div>
+
+                            <div class="row">
+                              <div class="col d-flex justify-content-end">
+                                <button class="btn btn-primary" type="submit">
+                                  <i *ngIf="refreshing" class="fas fa-spinner fa-spin"></i>&nbsp;&nbsp;
+                                  <span *ngIf="refreshing">Подождите...</span>
+                                  <span *ngIf="!refreshing">Сохранить</span>
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3 mb-3">
+                <div class="card mb-3">
+                  <div class="card-body">
+                    <div class="px-xl-3">
+                      <button (click)="onLogOut()" class="btn btn-block btn-secondary">
+                        <span>Выйти</span>
+                      </button>
+
+                      <button (click)="onChangePassword()" class="btn btn-block btn-secondary">
+                        <span>Изменить пароль</span>
+                      </button>
+
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!--FUNCTIONAL_BUTTONS-->
+    <button [hidden]="true" type="button" id="showProductsByProductType" data-toggle="tab"
+            data-target="#productsByProductType">
+    </button>
+
+    <button [hidden]="true" type="button" id="editProduct" data-toggle="modal" data-target="#editProductModal">
+    </button>
+    <button [hidden]="true" type="button" id="addToCart" data-toggle="modal" data-target="#addToCartModal">
+    </button>
+    <button [hidden]="true" type="button" id="openUpdateUserPassword" data-toggle="modal"
+            data-target="#updateUserPassword">
+    </button>
+    <button [hidden]="true" type="button" id="openCustomerView" data-toggle="modal" data-target="#customerViewModal">
+    </button>
+
+
+    <!--USER_INFO-MODAL-->
+    <div class="modal draggable fade bd-example-modal-lg" id="customerViewModal" tabindex="-1"
+         role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-center">Информация о покупателе</h5>
+
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="">
+              <div class="form-group">
+                <label>Имя</label>
+                <input type="text" name="firstName" required [(ngModel)]="customerToView.firstName"
+                       class="form-control" disabled="true">
+              </div>
+
+              <div class="form-group">
+                <label>Фамилия</label>
+                <input type="text" name="firstName" required [(ngModel)]="customerToView.lastName"
+                       class="form-control" disabled="true">
+              </div>
+
+              <div class="form-group">
+                <label>Телефон</label>
+                <input type="text" name="firstName" required [(ngModel)]="customerToView.phoneNumber"
+                       class="form-control" disabled="true">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!--EDIT_PRODUCT-MODAL-->
+    <div class="modal draggable fade bd-example-modal-lg" id="editProductModal" tabindex="-1"
+         role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 [hidden]="!isAdmin" class="modal-title text-center">Изменить/добавить товар</h5>
+            <h5 [hidden]="!isUser" class="modal-title text-center">Добавить в корзину</h5>
+
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="">
+              <form #editProductForm="ngForm">
+
+                <div class="form-group">
+                  <label for="steelGrade">Марка стали</label>
+                  <select name="steelGrade" id="steelGrade" class="form-control" ngModel #steelGradeInput="ngModel"
+                          required>
+                    <option style="display:none">Марка стали</option>
+                    <option
+                      *ngFor="let steelGrade of selectedProductType?.steelGrades">{{steelGrade.steelGrade}}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="sideThickness">Толщина стенки</label>
+                  <select name="sideThickness" id="sideThickness" class="form-control" ngModel
+                          #sideThicknessInput="ngModel" required>
+                    <option style="display:none">Толщина стенки</option>
+                    <option
+                      *ngFor="let sideThickness of selectedProductType?.sideThicknesses">{{sideThickness.sideThickness}}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="profileSize">Профилеразмер</label>
+                  <select name="profileSize" id="profileSize" class="form-control" ngModel #profileSizeInput="ngModel"
+                          required>
+                    <option style="display:none">Профилеразмер</option>
+                    <option *ngFor="let profileSize of selectedProductType?.profileSizes">{{profileSize.size}}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="length">Длина</label>
+                  <select name="length" id="length" class="form-control" ngModel #lengthInput="ngModel" required>
+                    <option style="display:none">Длина</option>
+                    <option
+                      *ngFor="let productLength of selectedProductType?.lengths">{{productLength.productLength}}</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="quantity">Количество</label>
+                  <input type="number" name="quantity" id="quantity" class="form-control" ngModel
+                         #quantityInput="ngModel" required placeholder="Количество"
+                         onkeydown="javascript: return ['Backspace','Delete','ArrowLeft','ArrowRight'].includes(event.code) ? true : !isNaN(Number(event.key)) && event.code!=='Space'">
+                </div>
+
+                <div [hidden]="!isAdmin" class="form-group">
+                  <label for="price">Количество</label>
+                  <input type="number" name="price" id="price" class="form-control" placeholder="Цена"
+                         *ngIf="isAdmin" ngModel #quantityInput="ngModel" required
+                         onkeydown="javascript: return ['Backspace','Delete','ArrowLeft','ArrowRight'].includes(event.code) ? true : !isNaN(Number(event.key)) && event.code!=='Space'">
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closeEditUserModalButton">
+                    Отмена
+                  </button>
+                  <button [hidden]="!isAdmin" (click)="saveOrUpdateProduct(editProductForm)"
+                          [disabled]="editProductForm.invalid" type="button"
+                          class="btn btn-primary">Сохранить
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!--ADD_TO_CART-MODAL-->
+    <div class="modal draggable fade bd-example-modal-lg" id="addToCartModal" tabindex="-1"
+         role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-center">Добавить в корзину</h5>
+
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="">
+              <form #addToCardForm="ngForm">
+                <div class="form-group">
+                  <label for="quantity">Количество</label>
+                  <input type="number" name="productToCartQuantity" id="productToCartQuantity" class="form-control"
+                         ngModel
+                         #productToCartQuantity="ngModel" required placeholder="1-{{productToCard.quantity}}"
+                         onkeydown="javascript: return ['Backspace','Delete','ArrowLeft','ArrowRight'].includes(event.code) ? true : !isNaN(Number(event.key)) && event.code!=='Space'">
+                </div>
+
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closeAddToCartModalButton">
+                    Отмена
+                  </button>
+                  <button [hidden]="!isUser" (click)="addProductToCard(productToCartQuantity.value)"
+                          [disabled]="addToCardForm.invalid" type="button"
+                          class="btn btn-primary">Добавить в корзину
+                  </button>
+
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--CHANGE_PASSWORD-MODAL-->
+    <div class="modal draggable fade bd-example-modal-lg" id="updateUserPassword" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title text-center">Изменение пароля</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div>
+              <form #editUserForm="ngForm">
+
+                <div class="row">
+                  <div class="col">
+
+                    <div class="row">
+                      <div class="col">
+                        <div class="form-group">
+                          <label>Текущий пароль</label>
+                          <input type="text" name="currentPassword" id="currentPassword" required
+                                 [(ngModel)]="newPassword.currentPassword"
+                                 class="form-control">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col">
+                        <div class="form-group">
+                          <label>Новый пароль</label>
+                          <input type="text" name="newPassword" id="newPassword" required
+                                 [(ngModel)]="newPassword.newPassword"
+                                 class="form-control">
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="new-user-close">Закрыть</button>
+            <button class="btn btn-primary" type="submit" (click)="changePassword(editUserForm.value)">Сохранить
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
