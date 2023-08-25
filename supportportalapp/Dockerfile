@@ -1,11 +1,13 @@
-FROM node:16.20.1
-
-RUN mkdir -p /app
-
-WORKDIR /app
-
-COPY . .
+### STAGE 1: Build ###
+FROM node:16.20.1 AS build
+WORKDIR /usr/src/app
+COPY package.json ./
 RUN npm install
-RUN npm run build --prod
+COPY . .
+RUN npm run build
 
-CMD ["npm", "start"]
+### STAGE 2: Run ###
+FROM nginx:1.17.1-alpine
+COPY default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /usr/src/app/dist/supportportalapp /usr/share/nginx/html
+EXPOSE 80

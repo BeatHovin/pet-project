@@ -1,32 +1,86 @@
-version: "3.9"
-services:
-  app:
-    image: 'docker-spring-boot-postgres:latest'
-    build:
-      context: .
-    container_name: app
-    depends_on:
-      - db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/master
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+#version: "3.9"
+#services:
+#  app:
+#    image: 'docker-spring-boot-postgres:latest'
+#    build: .
+#    container_name: app
+#    depends_on:
+#      - db
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/master
+#      - SPRING_DATASOURCE_USERNAME=admin
+#      - SPRING_DATASOURCE_PASSWORD=password
+#      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+#    ports:
+#      - '5432:5432'
+#
+#  db:
+#    image: postgres:latest
+#    environment:
+#      POSTGRES_DB: "master"
+#      POSTGRES_USER: "admin"
+#      POSTGRES_PASSWORD: "password"
+#    ports:
+#      - "8081:8081"
+#
+#  angularapp:
+#    build: /supportportalapp
+#    ports:
+#      - '4200:80'
+#    links:
+#      - app
+#
+##Volumes for DB data
+#volumes:
+#  scrum-data:
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+version: "3"
 
-  db:
+#Define services
+services:
+
+  #PostgreSQL Database for the application
+  scrum-postgres:
     image: postgres:latest
+    container_name: scrum-postgres
+    #Volume mounted for database for the storage
+#    volumes:
+#      - scrum-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432 # Forward the exposed port 5432 on the container to port 5432 on the host machine
+
+    #Environment variable for DB name, user and password
     environment:
       POSTGRES_DB: "master"
       POSTGRES_USER: "admin"
       POSTGRES_PASSWORD: "password"
+
+  #Back-end Spring Boot Application
+  scrum-app:
+    #The docker file in scrum-app build the jar and provides the docker image with the following name.
+    build: .
+    container_name: scrum-app
+
+    #Environment variables for Spring Boot Application.
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://scrum-postgres:5432/master
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
-      - "54321:5432"
+      - 8081:8081 # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    links:
+      - scrum-postgres
 
-  angular:
-    build: supportportalapp/.angular
-    volumes:
-      - 'supportportalapp./angular/usr/src/app'
+  #Fron-end Angular Application
+  scrum-ui:
+    build: ./supportportalapp
+    container_name: scrum-ui
     ports:
-      - "4500:4500"
+      - 4200:80
+    links:
+      - scrum-app
 
-
+#Volumes for DB data
+volumes:
+  scrum-data:
